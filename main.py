@@ -55,6 +55,16 @@ def load_transactions(file: str):
         return None
 
 
+def add_keyword_to_category(category: str, keyword: str) -> bool:
+    keyword = keyword.strip()
+
+    if keyword and keyword not in st.session_state.categories[category]:
+        st.session_state.categories[category].append(keyword)
+        save_categories()
+        return True
+    return False
+
+
 def main():
     st.title("Simple Finance Dashboard")
 
