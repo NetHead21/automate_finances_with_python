@@ -7,23 +7,24 @@ import os
 st.set_page_config(page_title="Simple Finance App", page_icon="$", layout="wide")
 category_file = "categories.json"
 
+def load_categories() -> dict:
+    # Load categories from file if it exists, handling empty/invalid JSON
+    if os.path.exists(category_file):
+        try:
+            with open(category_file, "r") as file:
+                return json.load(file)
+        except json.JSONDecodeError:
+            pass
+    return {"Uncategorized": []}
+
+
 if "categories" not in st.session_state:
-    st.session_state.categories = {"Uncategorized": []}
+    st.session_state.categories = load_categories() 
 
 
 def save_categories() -> None:
     with open(category_file, "w") as file:
         json.dump(st.session_state.categories, file)
-
-
-# Load categories from file if it exists, handling empty/invalid JSON
-if os.path.exists(category_file):
-    try:
-        with open(category_file, "r") as file:
-            st.session_state.categories = json.load(file)
-    except json.JSONDecodeError:
-        st.session_state.categories = {"Uncategorized": []}
-        save_categories()
 
 
 def categorize_transaction(df):
@@ -128,26 +129,31 @@ def main():
                         details = row["Details"]
                         st.session_state.debits_df.at[idx, "Category"] = new_category
                         add_keyword_to_category(new_category, details)
-                        
+
                 st.subheader("Expense Summary")
-                category_totals = st.session_state.debits_df.groupby("Category")["Amount"].sum().reset_index()
-                category_totals = category_totals.sort_values("Amount", ascending = False)
+                category_totals = (
+                    st.session_state.debits_df.groupby("Category")["Amount"]
+                    .sum()
+                    .reset_index()
+                )
+                category_totals = category_totals.sort_values("Amount", ascending=False)
 
                 st.dataframe(
                     category_totals,
-                    column_config = {
-                        "Amount": st.column_config.NumberColumn("Amount", format="%.2f USD")
-                        },
-                    use_container_width = True,
-                    hide_index = True
-
+                    column_config={
+                        "Amount": st.column_config.NumberColumn(
+                            "Amount", format="%.2f USD"
                         )
+                    },
+                    use_container_width=True,
+                    hide_index=True,
+                )
 
                 fig = px.pie(
-                        category_totals,
-                        values = "Amount",
-                        names = "Category",
-                        title = "Expenses by Category"
+                    category_totals,
+                    values="Amount",
+                    names="Category",
+                    title="Expenses by Category",
                 )
 
                 st.plotly_chart(fig, use_container_width=True)
