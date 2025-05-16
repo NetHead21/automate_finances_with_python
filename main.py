@@ -26,6 +26,22 @@ if os.path.exists(category_file):
         save_categories()
 
 
+def categorize_transaction(df):
+    df["Category"] = "Uncategorized"
+
+    for category, keywords in st.session_state.categories.items():
+        if category == "Uncategorized" or not keywords:
+            continue
+
+        lowered_keywords = [keyword.lower().strip() for keyword in keywords]
+
+        for idx, row in df.iterrows():
+            details = row["Details"].lower().strip()
+            if details is lowered_keywords:
+                df.at[idx, "Category"] = category
+    return df
+
+
 def load_transactions(file: str):
     try:
         df = pd.read_csv(file)
@@ -33,7 +49,7 @@ def load_transactions(file: str):
         df["Amount"] = df["Amount"].str.replace(",", "").astype(float)
         df["Date"] = pd.to_datetime(df["Date"], format="%d %b %Y")
         st.write(df)
-        return df
+        return categorize_transaction(df)
     except Exception as e:
         st.error(f"Error processing file {e}")
         return None
