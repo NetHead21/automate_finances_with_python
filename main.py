@@ -116,7 +116,41 @@ def main():
                 save_button = st.button("Apply Changes", type="primary")
 
                 if save_button:
-                    pass
+                    for idx, row in edited_df.iterrows():
+                        new_category = row["Category"]
+
+                        if (
+                            row["Category"]
+                            == st.session_state.debits_df.at[idx, "Category"]
+                        ):
+                            continue
+
+                        details = row["Details"]
+                        st.session_state.debits_df.at[idx, "Category"] = new_category
+                        add_keyword_to_category(new_category, details)
+                        
+                st.subheader("Expense Summary")
+                category_totals = st.session_state.debits_df.groupby("Category")["Amount"].sum().reset_index()
+                category_totals = category_totals.sort_values("Amount", ascending = False)
+
+                st.dataframe(
+                    category_totals,
+                    column_config = {
+                        "Amount": st.column_config.NumberColumn("Amount", format="%.2f USD")
+                        },
+                    use_container_width = True,
+                    hide_index = True
+
+                        )
+
+                fig = px.pie(
+                        category_totals,
+                        values = "Amount",
+                        names = "Category",
+                        title = "Expenses by Category"
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
 
             with tab2:
                 st.write(credits_df)
