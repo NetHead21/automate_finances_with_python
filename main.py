@@ -7,6 +7,7 @@ import os
 st.set_page_config(page_title="Simple Finance App", page_icon="$", layout="wide")
 category_file = "categories.json"
 
+
 def load_categories() -> dict:
     # Load categories from file if it exists, handling empty/invalid JSON
     if os.path.exists(category_file):
@@ -19,7 +20,7 @@ def load_categories() -> dict:
 
 
 if "categories" not in st.session_state:
-    st.session_state.categories = load_categories() 
+    st.session_state.categories = load_categories()
 
 
 def save_categories() -> None:
@@ -29,7 +30,7 @@ def save_categories() -> None:
 
 def categorize_transaction(df):
     df["Category"] = "Uncategorized"
-    
+
     categories = st.session_state.categories
     for category, keywords in categories.items():
         if category == "Uncategorized" or not keywords:
@@ -37,10 +38,15 @@ def categorize_transaction(df):
 
         lowered_keywords = [keyword.lower().strip() for keyword in keywords]
 
-        mask = df["Details"].str.lower().str.strip().apply(
-            lambda details: any(keyword in details for keyword in lowered_keywords)
+        mask = (
+            df["Details"]
+            .str.lower()
+            .str.strip()
+            .apply(
+                lambda details: any(keyword in details for keyword in lowered_keywords)
             )
-        df.loc[mask, "Category"] = category 
+        )
+        df.loc[mask, "Category"] = category
     return df
 
 
