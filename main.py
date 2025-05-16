@@ -5,9 +5,28 @@ import json
 import os
 
 st.set_page_config(page_title="Simple Finance App", page_icon="$", layout="wide")
+category_file = "categories.json"
+
+if "categories" not in st.session_state:
+    st.session_state.categories = {"Uncategorized": []}
 
 
-def load_transactions(file: str): 
+def save_categories() -> None:
+    with open(category_file, "w") as file:
+        json.dump(st.session_state.categories, file)
+
+
+# Load categories from file if it exists, handling empty/invalid JSON
+if os.path.exists(category_file):
+    try:
+        with open(category_file, "r") as file:
+            st.session_state.categories = json.load(file)
+    except json.JSONDecodeError:
+        st.session_state.categories = {"Uncategorized": []}
+        save_categories()
+
+
+def load_transactions(file: str):
     try:
         df = pd.read_csv(file)
         df.columns = [col.strip() for col in df.columns]
@@ -35,6 +54,16 @@ def main():
             tab1, tab2 = st.tabs(["Expenses (Debits)", "Payments (Credits)"])
 
             with tab1:
+                new_category = st.text_input("New Category Name")
+                add_button = st.button("Add Category")
+
+                if add_button and new_category:
+                    if new_category not in st.session_state.categories:
+                        st.session_state.categories[new_category] = []
+                        save_categories()
+                        st.success(f"Added a new category: {new_category}")
+                        st.rerun()
+
                 st.write(debits_df)
 
             with tab2:
