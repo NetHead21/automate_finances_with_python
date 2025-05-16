@@ -29,17 +29,18 @@ def save_categories() -> None:
 
 def categorize_transaction(df):
     df["Category"] = "Uncategorized"
-
-    for category, keywords in st.session_state.categories.items():
+    
+    categories = st.session_state.categories
+    for category, keywords in categories.items():
         if category == "Uncategorized" or not keywords:
             continue
 
         lowered_keywords = [keyword.lower().strip() for keyword in keywords]
 
-        for idx, row in df.iterrows():
-            details = row["Details"].lower().strip()
-            if details is lowered_keywords:
-                df.at[idx, "Category"] = category
+        mask = df["Details"].str.lower().str.strip().apply(
+            lambda details: any(keyword in details for keyword in lowered_keywords)
+            )
+        df.loc[mask, "Category"] = category 
     return df
 
 
