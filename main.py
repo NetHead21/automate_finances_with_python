@@ -166,6 +166,9 @@ def main():
                 st.plotly_chart(fig, use_container_width=True)
 
             with tab2:
+                st.subheader("Payments Summary")
+                total_payments = credits_df["Amount"].sum()
+                st.metric("Total Payments", f"{total_payments:,.2f} USD")
                 st.write(credits_df)
 
 
