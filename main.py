@@ -82,8 +82,8 @@ def main():
         df = load_transactions(uploaded_file)
 
         if df is not None:
-            debits_df = df[df["Debit/Credit"] == "Debit"].copy()
-            credits_df = df[df["Debit/Credit"] == "Credit"].copy()
+            debits_df = df[df["Debit/Credit"] == "Debit"]
+            credits_df = df[df["Debit/Credit"] == "Credit"]
 
             st.session_state.debits_df = debits_df.copy()
 
@@ -100,7 +100,7 @@ def main():
                         st.success(f"Added a new category: {new_category}")
                         st.rerun()
 
-                st.subheader("Your Expenes")
+                st.subheader("Your Expenses")
                 edited_df = st.data_editor(
                     st.session_state.debits_df[
                         ["Date", "Details", "Amount", "Category"]
